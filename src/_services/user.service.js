@@ -1,4 +1,4 @@
-// import config from 'config';
+
 import { authHeader } from '../_helpers';
 
 export const userService = {
@@ -6,7 +6,6 @@ export const userService = {
     logout,
     register,
     getAll,
-    getById,
     update,
     delete: _delete
 };
@@ -21,9 +20,7 @@ function login(username, password) {
     return fetch('http://localhost:3001/auth/login', requestOptions)
         .then(handleResponse)
         .then(user => {
-            // store user details and jwt token in local storage to keep user logged in between page refreshes
             localStorage.setItem('user', JSON.stringify(user));
-
             return user;
         });
 }
@@ -37,17 +34,7 @@ function getAll() {
         method: 'GET',
         headers: authHeader()
     };
-    console.log('getAll');
     return fetch('http://localhost:3001/getUsers', requestOptions).then(handleResponse);
-}
-
-function getById(id) {
-    const requestOptions = {
-        method: 'GET',
-        headers: authHeader()
-    };
-    console.log('getByid');
-    // return fetch(`${config.apiUrl}/users/${id}`, requestOptions).then(handleResponse);
 }
 
 function register(user) {
@@ -58,7 +45,6 @@ function register(user) {
                 },
         body: JSON.stringify(user)
     };
-    console.log('register');
     return fetch('http://localhost:3001/register', requestOptions).then(handleResponse);
 }
 
@@ -68,18 +54,15 @@ function update(user) {
         headers: { ...authHeader(), 'Content-Type': 'application/json' },
         body: JSON.stringify(user)
     };
-    console.log('update');
-    // return fetch(`${config.apiUrl}/users/${user.id}`, requestOptions).then(handleResponse);;
+    return fetch(`http://localhost:3001/update/${user._id}`, requestOptions).then(handleResponse);;
 }
 
-// prefixed function name with underscore because delete is a reserved word in javascript
 function _delete(id) {
     const requestOptions = {
         method: 'DELETE',
-        headers: authHeader()
+        headers: { ...authHeader(), 'Access-Control-Allow-Origin': '*' },
     };
-    console.log('delete');
-    // return fetch(`${config.apiUrl}/users/${id}`, requestOptions).then(handleResponse);
+    return fetch(`http://localhost:3001/delete/${id}`, requestOptions).then(handleResponse);
 }
 
 function handleResponse(response) {
@@ -88,7 +71,7 @@ function handleResponse(response) {
         if (!response.ok) {
             if (response.status === 401) {
                 logout();
-                // location.reload(true);
+                window.location.reload(true);
             }
 
             const error = (data && data.message) || response.statusText;
